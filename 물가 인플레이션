@@ -1,0 +1,76 @@
+import os
+
+# Create directory structure
+base_dir = "/mnt/data/inflation-analyzer"
+os.makedirs(base_dir + "/data", exist_ok=True)
+os.makedirs(base_dir + "/assets", exist_ok=True)
+
+# main.py
+main_py = '''\
+import pandas as pd
+import matplotlib.pyplot as plt
+import requests
+from io import StringIO
+
+# 1. 미국 CPI 데이터 가져오기 (FRED - Consumer Price Index for All Urban Consumers)
+def get_cpi_data():
+    url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL"
+    response = requests.get(url)
+    if response.status_code == 200:
+        df = pd.read_csv(StringIO(response.text))
+        df['DATE'] = pd.to_datetime(df['DATE'])
+        df = df.rename(columns={'CPIAUCSL': 'CPI'})
+        return df
+    else:
+        raise Exception("Failed to fetch data from FRED.")
+
+# 2. 인플레이션율 계산 (전년 동월 대비)
+def compute_inflation(df):
+    df = df.set_index('DATE')
+    df = df['2022-01-01':'2024-12-31']
+    df['Inflation (%)'] = df['CPI'].pct_change(periods=12) * 100
+    return df
+
+# 3. 그래프 시각화
+def plot_inflation(df):
+    plt.figure(figsize=(12, 6))
+    df['Inflation (%)'].plot(marker='o', color='crimson')
+    plt.title('미국 연간 인플레이션율 (2022-2024)', fontsize=16)
+    plt.xlabel('날짜')
+    plt.ylabel('인플레이션율 (%)')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("assets/inflation_chart_2022_2024.png")
+    plt.show()
+
+# 4. 전체 실행
+def main():
+    df_raw = get_cpi_data()
+    df_inflation = compute_inflation(df_raw)
+    df_inflation.to_csv("data/us_inflation_2022_2024.csv")
+    plot_inflation(df_inflation)
+    print("CSV와 그래프 저장 완료.")
+
+if __name__ == "__main__":
+    main()
+'''
+
+# README.md
+readme_md = '''\
+# Inflation Analyzer (2022-2024)
+
+미국 소비자물가지수(CPI)를 기반으로 최근 3년간(2022~2024) 인플레이션율을 계산하고 시각화하는 Python 도구입니다.
+
+## 기능
+- 미국 CPI 데이터 (FRED) 자동 수집
+- 연간 인플레이션율 계산 (전년 동월 대비)
+- 그래프 시각화 및 CSV 저장
+
+## 실행 방법
+
+```bash
+# 패키지 설치
+pip install -r requirements.txt
+
+# 코드 실행
+python main.py
