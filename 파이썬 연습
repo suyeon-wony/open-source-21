@@ -1,0 +1,12 @@
+  # 문제: 주어진 정수가 짝수인지 홀수인지 판별하는 함수를 작성하시오.
+# 함수 이름: is_even
+# 입력: 정수 n (예: 3, 10, -1 등)
+# 출력: n이 짝수이면 True, 홀수이면 False
+
+def is_even(n):
+    # 여기에 코드를 작성하세요
+    pass
+
+# 예시 테스트 코드
+print(is_even(4))  # 출력: True
+print(is_even(7))  # 출력: False
